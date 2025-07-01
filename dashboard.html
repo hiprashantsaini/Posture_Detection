@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - PostureTrack</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .logout-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card-header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            margin: -2rem -2rem 1.5rem -2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .profile-item {
+            padding: 0.75rem;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .profile-label {
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-value {
+            font-size: 1rem;
+            color: #333;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+
+        .patients-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .patient-item {
+            background: rgba(102, 126, 234, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .patient-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .patient-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .patient-details {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .pose-detection-section {
+            grid-column: 1 / -1;
+        }
+
+        .video-upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            background: rgba(102, 126, 234, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .video-upload-area:hover {
+            border-color: #764ba2;
+            background: rgba(118, 75, 162, 0.05);
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        .upload-label {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            display: inline-block;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .upload-label:hover {
+            transform: translateY(-2px);
+        }
+
+        .video-container {
+            position: relative;
+            display: inline-block;
+            margin: 1rem 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        #inputVideo,
+        #outputCanvas {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            display: block;
+        }
+
+        #inputVideo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+
+        .status-inactive {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+                margin: 1rem auto;
+                padding: 0 0.5rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .card-header {
+                margin: -1.5rem -1.5rem 1rem -1.5rem;
+            }
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            font-weight: 500;
+        }
+
+        .alert-info {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .alert-success {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">PostureTrack</div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Doctor Profile Card -->
+        <div class="card">
+            <div class="card-header">
+                <i>👨‍⚕️</i> Doctor Profile
+            </div>
+            <div id="doctorProfile">
+                <div class="profile-grid">
+                    <div class="profile-item">
+                        <div class="profile-label">First Name</div>
+                        <div class="profile-value" id="firstName">Loading...</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Last Name</div>
+                        <div class="profile-value" id="lastName">Loading...</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Email</div>
+                        <div class="profile-value" id="email">Loading...</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Phone</div>
+                        <div class="profile-value" id="phone">Loading...</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Specialization</div>
+                        <div class="profile-value" id="specialization">Loading...</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Hospital</div>
+                        <div class="profile-value" id="hospital">Loading...</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">License Number</div>
+                        <div class="profile-value" id="licenseNumber">Loading...</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Registration Date</div>
+                        <div class="profile-value" id="registrationDate">Loading...</div>
+                    </div>
+                </div>
+                <div class="profile-item" style="margin-top: 1rem;">
+                    <div class="profile-label">Address</div>
+                    <div class="profile-value" id="address">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patients List Card -->
+        <div class="card">
+            <div class="card-header">
+                <i>👥</i> Patient List
+            </div>
+            <div class="patients-list" id="patientsList">
+                <!-- Patients will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Pose Detection Tool -->
+        <div class="card pose-detection-section">
+            <div class="card-header">
+                <i>🎯</i> Pose Detection Tool
+            </div>
+
+            <div class="video-upload-area">
+                <input type="file" id="videoUpload" class="upload-input" accept="video/*">
+                <label for="videoUpload" class="upload-label">
+                    📹 Upload Video for Pose Analysis
+                </label>
+                <p style="margin-top: 1rem; color: #666;">
+                    Upload a video file to analyze posture and detect pose landmarks
+                </p>
+            </div>
+
+            <div class="loading-spinner" id="loadingSpinner"></div>
+
+            <div class="video-container" id="videoContainer" style="display: none;">
+                <video id="inputVideo" playsinline muted></video>
+                <canvas id="outputCanvas"></canvas>
+            </div>
+
+            <div id="analysisResults" style="display: none;">
+                <div class="alert alert-success">
+                    <strong>Analysis Complete!</strong> Pose landmarks detected and overlaid on the video.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock doctor data (in a real app, this would come from localStorage)
+        const mockDoctorData = {
+            id: 'dr_1640995200000_abc123def',
+            firstName: 'Dr. Sarah',
+            lastName: 'Johnson',
+            email: 'sarah.johnson@hospital.com',
+            phone: '+1 (555) 123-4567',
+            specialization: 'Orthopedic Surgery',
+            hospital: 'City General Hospital',
+            licenseNumber: 'MD-2021-789456',
+            address: '123 Medical Center Drive, Healthcare City, HC 12345',
+            registrationDate: '2024-01-15T10:30:00.000Z',
+            isActive: true
+        };
+
+        // Mock patients data
+        const mockPatients = [
+            {
+                id: '1',
+                name: 'John Smith',
+                age: 45,
+                condition: 'Lower Back Pain',
+                lastVisit: '2024-06-25',
+                status: 'active'
+            },
+            {
+                id: '2',
+                name: 'Emma Davis',
+                age: 32,
+                condition: 'Neck Strain',
+                lastVisit: '2024-06-20',
+                status: 'active'
+            },
+            {
+                id: '3',
+                name: 'Michael Brown',
+                age: 58,
+                condition: 'Shoulder Impingement',
+                lastVisit: '2024-06-15',
+                status: 'inactive'
+            },
+            {
+                id: '4',
+                name: 'Lisa Wilson',
+                age: 28,
+                condition: 'Posture Correction',
+                lastVisit: '2024-06-28',
+                status: 'active'
+            },
+            {
+                id: '5',
+                name: 'David Miller',
+                age: 41,
+                condition: 'Chronic Pain',
+                lastVisit: '2024-06-10',
+                status: 'active'
+            }
+        ];
+
+        // Load doctor profile data
+        function loadDoctorProfile() {
+            // In a real application, you would use:
+            // const doctorData = JSON.parse(localStorage.getItem('currentDoctor') || '{}');
+
+            const doctorData = mockDoctorData;
+
+            if (doctorData.id) {
+                document.getElementById('firstName').textContent = doctorData.firstName;
+                document.getElementById('lastName').textContent = doctorData.lastName;
+                document.getElementById('email').textContent = doctorData.email;
+                document.getElementById('phone').textContent = doctorData.phone;
+                document.getElementById('specialization').textContent = doctorData.specialization;
+                document.getElementById('hospital').textContent = doctorData.hospital;
+                document.getElementById('licenseNumber').textContent = doctorData.licenseNumber;
+                document.getElementById('address').textContent = doctorData.address;
+
+                const regDate = new Date(doctorData.registrationDate);
+                document.getElementById('registrationDate').textContent = regDate.toLocaleDateString();
+            } else {
+                // If no doctor data found, redirect to login
+                // window.location.href = 'login.html';
+                console.log('No doctor data found - would redirect to login.html');
+            }
+        }
+
+        // Load patients list
+        function loadPatients() {
+            const patientsList = document.getElementById('patientsList');
+            patientsList.innerHTML = '';
+
+            mockPatients.forEach(patient => {
+                const patientDiv = document.createElement('div');
+                patientDiv.className = 'patient-item';
+
+                const statusClass = patient.status === 'active' ? 'status-active' : 'status-inactive';
+
+                patientDiv.innerHTML = `
+          <div class="patient-name">${patient.name}</div>
+          <div class="patient-details">
+            <strong>Age:</strong> ${patient.age} | 
+            <strong>Condition:</strong> ${patient.condition}<br>
+            <strong>Last Visit:</strong> ${patient.lastVisit}
+            <span class="status-badge ${statusClass}">${patient.status}</span>
+          </div>
+        `;
+
+                patientsList.appendChild(patientDiv);
+            });
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear localStorage
+                // localStorage.removeItems([
+                //   'currentDoctor',
+                //   'posturetrack_session',
+                //   'posturetrack_doctors'
+                // ]);
+
+                // In a real app, redirect to login page
+                // window.location.href = 'login.html';
+
+                alert('Logout successful! (In real app, would redirect to login.html)');
+                console.log('Logout - localStorage cleared, redirecting to login.html');
+            }
+        }
+
+        // MediaPipe Pose Detection Setup
+        const videoInput = document.getElementById('inputVideo');
+        const canvas = document.getElementById('outputCanvas');
+        const ctx = canvas.getContext('2d');
+        const videoContainer = document.getElementById('videoContainer');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const analysisResults = document.getElementById('analysisResults');
+
+        // Initialize BlazePose
+        const pose = new Pose({
+            locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
+        });
+
+        pose.setOptions({
+            modelComplexity: 1,
+            smoothLandmarks: true,
+            enableSegmentation: false,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        pose.onResults(onResults);
+
+        // Video upload handler
+        document.getElementById('videoUpload').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                loadingSpinner.style.display = 'block';
+                analysisResults.style.display = 'none';
+
+                const url = URL.createObjectURL(file);
+                videoInput.src = url;
+                videoInput.load();
+
+                videoInput.onloadeddata = () => {
+                    // Set canvas dimensions to match video
+                    canvas.width = videoInput.videoWidth;
+                    canvas.height = videoInput.videoHeight;
+
+                    videoContainer.style.display = 'block';
+                    loadingSpinner.style.display = 'none';
+
+                    videoInput.play();
+                    requestAnimationFrame(processFrame);
+                };
+            }
+        });
+
+        // Process video frames
+        async function processFrame() {
+            if (!videoInput.paused && !videoInput.ended) {
+                await pose.send({ image: videoInput });
+                requestAnimationFrame(processFrame);
+            } else if (videoInput.ended) {
+                analysisResults.style.display = 'block';
+            }
+        }
+
+        // Draw pose landmarks and connections
+        // function onResults(results) {
+        //     ctx.clearRect(0, 0, canvas.width, canvas.height);
+        //     ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+
+        //     if (results.poseLandmarks) {
+        //         // Draw pose connections
+        //         drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {
+        //             color: '#00FF00',
+        //             lineWidth: 12
+        //         });
+
+        //         // Draw pose landmarks
+        //         drawLandmarks(ctx, results.poseLandmarks, {
+        //             color: '#FF0000',
+        //             lineWidth: 2,
+        //             radius: 4
+        //         });
+        //     }
+        // }
+
+        const jointThresholds = {
+            "Right Elbow": { min: 45, max: 160 },
+            "Left Elbow": { min: 45, max: 160 },
+            "Right Knee": { min: 60, max: 170 },
+            "Left Knee": { min: 60, max: 170 },
+            "Right Shoulder": { min: 30, max: 160 },
+            "Left Shoulder": { min: 30, max: 160 },
+            "Right Hip": { min: 70, max: 160 },
+            "Left Hip": { min: 70, max: 160 },
+            "Neck": { min: 80, max: 100 }
+        };
+
+
+        function onResults(results) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+
+            if (results.poseLandmarks) {
+                const lm = results.poseLandmarks;
+
+                // Draw connectors and landmarks
+                drawConnectors(ctx, lm, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 12 });
+                drawLandmarks(ctx, lm, { color: '#FF0000', lineWidth: 4, radius: 6 });
+
+                // 👇 Calculate and draw angles
+                drawJointAngle("Right Elbow", lm[12], lm[14], lm[16]); // shoulder, elbow, wrist
+                drawJointAngle("Left Elbow", lm[11], lm[13], lm[15]);
+                drawJointAngle("Right Knee", lm[24], lm[26], lm[28]);  // hip, knee, ankle
+                drawJointAngle("Left Knee", lm[23], lm[25], lm[27]);
+
+                // ✨ Additional angles
+                drawJointAngle("Right Shoulder", lm[14], lm[12], lm[24]); // elbow–shoulder–hip
+                drawJointAngle("Left Shoulder", lm[13], lm[11], lm[23]);
+
+                drawJointAngle("Right Hip", lm[12], lm[24], lm[26]);      // shoulder–hip–knee
+                drawJointAngle("Left Hip", lm[11], lm[23], lm[25]);
+
+                drawJointAngle("Right Ankle", lm[26], lm[28], lm[30]);    // knee–ankle–foot index (right)
+                drawJointAngle("Left Ankle", lm[25], lm[27], lm[29]);     // knee–ankle–foot index (left)
+
+                // Optional: Add neck angle using left shoulder, nose, right shoulder
+                drawJointAngle("Neck", lm[11], lm[0], lm[12]);
+            }
+        }
+
+        // 🔢 Angle Calculation Helper
+        function calculateAngle(A, B, C) {
+            const AB = { x: A.x - B.x, y: A.y - B.y };
+            const CB = { x: C.x - B.x, y: C.y - B.y };
+
+            const dot = AB.x * CB.x + AB.y * CB.y;
+            const magAB = Math.sqrt(AB.x ** 2 + AB.y ** 2);
+            const magCB = Math.sqrt(CB.x ** 2 + CB.y ** 2);
+
+            const angleRad = Math.acos(dot / (magAB * magCB));
+            return Math.round(angleRad * (180 / Math.PI));
+        }
+
+        // // 🖍️ Draw angle near joint
+        // function drawJointAngle(label, A, B, C) {
+        //     const angle = calculateAngle(A, B, C);
+        //     const x = B.x * canvas.width;
+        //     const y = B.y * canvas.height;
+
+        //     ctx.fillStyle = "#fff";
+        //     ctx.font = "26px Arial";
+        //     ctx.fillText(`${angle}°`, x + 15, y - 15);
+        // }
+
+        // Draw angle near joint and make bad posture line red
+        function drawJointAngle(label, A, B, C) {
+            const angle = calculateAngle(A, B, C);
+            const x = B.x * canvas.width;
+            const y = B.y * canvas.height;
+
+            // Get safe range from table
+            const threshold = jointThresholds[label] || { min: 0, max: 180 };
+            const isGoodPosture = angle >= threshold.min && angle <= threshold.max;
+            const color = isGoodPosture ? "#00FF00" : "#FF0000"; // green or red
+
+            // Draw angle text
+            ctx.fillStyle = color;
+            ctx.font = "22px Arial";
+            ctx.fillText(`${angle}°`, x + 5, y - 5);
+
+            // Draw the joint dot
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+
+            // 🟥 Draw custom lines for the joint connections with the same color
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
+
+            // Line from A to B
+            ctx.beginPath();
+            ctx.moveTo(A.x * canvas.width, A.y * canvas.height);
+            ctx.lineTo(B.x * canvas.width, B.y * canvas.height);
+            ctx.stroke();
+
+            // Line from C to B
+            ctx.beginPath();
+            ctx.moveTo(C.x * canvas.width, C.y * canvas.height);
+            ctx.lineTo(B.x * canvas.width, B.y * canvas.height);
+            ctx.stroke();
+        }
+
+
+        // Initialize dashboard on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            loadDoctorProfile();
+            loadPatients();
+        });
+
+        // Add some interactive features
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('patient-item')) {
+                const patientName = e.target.querySelector('.patient-name').textContent;
+                alert(`View detailed profile for ${patientName}\n(Feature would open patient details modal)`);
+            }
+        });
+    </script>
+</body>
+
+</html>

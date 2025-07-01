@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Doctor Login - PostureTrack</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      animation: slideUp 0.8s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .login-header {
+      background: linear-gradient(135deg, #2d3748, #4a5568);
+      color: white;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .logo {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .logo i {
+      color: #4299e1;
+      margin-right: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      opacity: 0.9;
+      position: relative;
+      z-index: 2;
+      margin-bottom: 0.5rem;
+    }
+
+    .welcome-text {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      position: relative;
+      z-index: 2;
+    }
+
+    .login-form {
+      padding: 2.5rem;
+      background: white;
+    }
+
+    .form-title {
+      color: #2d3748;
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    .form-subtitle {
+      color: #718096;
+      font-size: 0.95rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      color: #4a5568;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 1rem 1rem 1rem 3rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 1rem;
+      background: #f8fafc;
+      transition: all 0.3s ease;
+      color: #2d3748;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #4299e1;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .form-group input::placeholder {
+      color: #a0aec0;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #a0aec0;
+      transition: color 0.3s ease;
+      font-size: 1.1rem;
+    }
+
+    .form-group input:focus ~ .input-icon {
+      color: #4299e1;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #a0aec0;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+      color: #4299e1;
+    }
+
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #4a5568;
+    }
+
+    .remember-me input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      accent-color: #4299e1;
+    }
+
+    .forgot-password {
+      color: #4299e1;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .forgot-password:hover {
+      color: #3182ce;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #4299e1, #3182ce);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
+      margin-top: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .submit-btn:hover::before {
+      left: 100%;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(66, 153, 225, 0.4);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading {
+      display: none;
+      margin-left: 0.5rem;
+    }
+
+    .error-message {
+      background: #fed7d7;
+      color: #c53030;
+      padding: 0.875rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      border-left: 4px solid #c53030;
+      display: none;
+      animation: shake 0.5s ease-in-out;
+    }
+
+    .success-message {
+      background: #c6f6d5;
+      color: #2f855a;
+      padding: 0.875rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      border-left: 4px solid #2f855a;
+      display: none;
+    }
+
+    .signup-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e2e8f0;
+      color: #718096;
+      font-size: 0.9rem;
+    }
+
+    .signup-link a {
+      color: #4299e1;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .signup-link a:hover {
+      color: #3182ce;
+    }
+
+    .form-footer {
+      background: #f8fafc;
+      padding: 1.5rem 2.5rem;
+      text-align: center;
+      color: #718096;
+      font-size: 0.85rem;
+    }
+
+    .demo-credentials {
+      background: #e6fffa;
+      border: 1px solid #81e6d9;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+    }
+
+    .demo-credentials h4 {
+      color: #234e52;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .demo-credentials p {
+      color: #285e61;
+      margin: 0.25rem 0;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .login-wrapper {
+        margin: 0;
+        border-radius: 16px;
+      }
+
+      .login-header {
+        padding: 2rem 1.5rem;
+      }
+
+      .logo {
+        font-size: 1.9rem;
+      }
+
+      .login-form {
+        padding: 2rem 1.5rem;
+      }
+
+      .form-options {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+
+      .form-footer {
+        padding: 1rem 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .login-form {
+        padding: 1.5rem 1rem;
+      }
+
+      .form-title {
+        font-size: 1.5rem;
+      }
+
+      .submit-btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+      }
+    }
+
+    /* Animation for form validation */
+    .shake {
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    /* Pulse animation for demo credentials */
+    .demo-credentials {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.9; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-header">
+      <div class="logo">
+        <i class="fas fa-user-md"></i>
+        PostureTrack
+      </div>
+      <div class="subtitle">AI-Powered Posture Analysis</div>
+      <div class="welcome-text">Welcome back, Doctor</div>
+    </div>
+
+    <div class="login-form">
+      <h2 class="form-title">Sign In</h2>
+      <p class="form-subtitle">Access your patient analysis dashboard</p>
+      
+      <div class="demo-credentials">
+        <h4><i class="fas fa-info-circle"></i> Demo Access</h4>
+        <p><strong>Email:</strong> demo@posturetrack.com</p>
+        <p><strong>Password:</strong> Demo123!</p>
+      </div>
+
+      <div class="error-message" id="errorMessage"></div>
+      <div class="success-message" id="successMessage"></div>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <input type="email" id="email" placeholder="Enter your email" required>
+            <i class="fas fa-envelope input-icon"></i>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="password" placeholder="Enter your password" required>
+            <i class="fas fa-lock input-icon"></i>
+            <i class="fas fa-eye password-toggle" id="passwordToggle"></i>
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label class="remember-me">
+            <input type="checkbox" id="rememberMe">
+            Remember me
+          </label>
+          <a href="#" class="forgot-password" id="forgotPassword">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          Sign In
+          <i class="fas fa-spinner fa-spin loading" id="loadingIcon"></i>
+        </button>
+      </form>
+
+      <div class="signup-link">
+        Don't have an account? <a href="signup.html">Register as Doctor</a>
+      </div>
+    </div>
+
+    <div class="form-footer">
+      Secure login protected by industry-standard encryption
+    </div>
+  </div>
+
+  <script>
+    // Form elements
+    const form = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingIcon = document.getElementById('loadingIcon');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+    const passwordToggle = document.getElementById('passwordToggle');
+    const passwordInput = document.getElementById('password');
+    const emailInput = document.getElementById('email');
+    const rememberMeCheckbox = document.getElementById('rememberMe');
+    const forgotPasswordLink = document.getElementById('forgotPassword');
+
+    // Demo credentials
+    const DEMO_CREDENTIALS = {
+      email: 'demo@posturetrack.com',
+      password: 'Demo123!'
+    };
+
+    // Password toggle functionality
+    passwordToggle.addEventListener('click', function() {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      this.classList.toggle('fa-eye');
+      this.classList.toggle('fa-eye-slash');
+    });
+
+    // Form validation and messaging
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      successMessage.style.display = 'none';
+      form.classList.add('shake');
+      setTimeout(() => form.classList.remove('shake'), 500);
+    }
+
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+      errorMessage.style.display = 'none';
+    }
+
+    function hideMessages() {
+      errorMessage.style.display = 'none';
+      successMessage.style.display = 'none';
+    }
+
+    // Email validation
+    function isValidEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    // Save login session
+    function saveLoginSession(doctorData) {
+      const sessionData = {
+        id: doctorData.id,
+        email: doctorData.email,
+        firstName: doctorData.firstName,
+        lastName: doctorData.lastName,
+        specialization: doctorData.specialization,
+        hospital: doctorData.hospital,
+        loginTime: new Date().toISOString(),
+        isLoggedIn: true
+      };
+
+      // Store in sessionStorage for current session
+      sessionStorage.setItem('posturetrack_session', JSON.stringify(sessionData));
+
+      // Store in localStorage if remember me is checked
+      if (rememberMeCheckbox.checked) {
+        localStorage.setItem('posturetrack_remember', JSON.stringify({
+          email: doctorData.email,
+          rememberMe: true
+        }));
+      }
+    }
+
+    // Check for remembered login
+    function checkRememberedLogin() {
+      const remembered = localStorage.getItem('posturetrack_remember');
+      if (remembered) {
+        const data = JSON.parse(remembered);
+        if (data.rememberMe) {
+          emailInput.value = data.email;
+          rememberMeCheckbox.checked = true;
+        }
+      }
+    }
+
+    // Authenticate user
+    function authenticateUser(email, password) {
+      // Check demo credentials first
+      if (email === DEMO_CREDENTIALS.email && password === DEMO_CREDENTIALS.password) {
+        return {
+          success: true,
+          doctor: {
+            id: 'demo_user',
+            email: DEMO_CREDENTIALS.email,
+            firstName: 'Demo',
+            lastName: 'Doctor',
+            specialization: 'General Practice',
+            hospital: 'PostureTrack Demo Clinic',
+            isDemo: true
+          }
+        };
+      }
+
+      // Check registered doctors
+      const doctors = JSON.parse(localStorage.getItem('posturetrack_doctors') || '[]');
+      const doctor = doctors.find(doc => 
+        doc.email === email && 
+        doc.password === password && 
+        doc.isActive !== false
+      );
+
+      if (doctor) {
+        return { success: true, doctor };
+      }
+
+      return { success: false, message: 'Invalid email or password' };
+    }
+
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      hideMessages();
+
+      const email = emailInput.value.trim().toLowerCase();
+      const password = passwordInput.value;
+
+      // Validation
+      if (!email || !password) {
+        showError('Please enter both email and password.');
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        showError('Please enter a valid email address.');
+        return;
+      }
+
+      // Show loading state
+      submitBtn.disabled = true;
+      loadingIcon.style.display = 'inline-block';
+      submitBtn.textContent = 'Signing In';
+
+      try {
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1200));
+
+        // Authenticate user
+        const authResult = authenticateUser(email, password);
+
+        if (authResult.success) {
+          // Save login session
+          saveLoginSession(authResult.doctor);
+
+          // Show success message
+          showSuccess(`Welcome back, Dr. ${authResult.doctor.firstName}!`);
+
+          // Update login timestamp for registered users
+          if (!authResult.doctor.isDemo) {
+            const doctors = JSON.parse(localStorage.getItem('posturetrack_doctors') || '[]');
+            const doctorIndex = doctors.findIndex(doc => doc.id === authResult.doctor.id);
+            if (doctorIndex !== -1) {
+              doctors[doctorIndex].lastLogin = new Date().toISOString();
+              localStorage.setItem('posturetrack_doctors', JSON.stringify(doctors));
+            }
+          }
+
+          // Redirect to dashboard
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1500);
+
+        } else {
+          showError(authResult.message);
+        }
+
+      } catch (error) {
+        showError('Login failed. Please try again.');
+        console.error('Login error:', error);
+      } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        loadingIcon.style.display = 'none';
+        submitBtn.textContent = 'Sign In';
+      }
+    });
+
+    // Forgot password functionality
+    forgotPasswordLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      const email = emailInput.value.trim();
+      if (!email) {
+        showError('Please enter your email address first.');
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        showError('Please enter a valid email address.');
+        return;
+      }
+
+      // Check if email exists
+      const doctors = JSON.parse(localStorage.getItem('posturetrack_doctors') || '[]');
+      const doctorExists = doctors.some(doc => doc.email === email.toLowerCase());
+
+      if (doctorExists || email === DEMO_CREDENTIALS.email) {
+        showSuccess('Password reset instructions have been sent to your email.');
+        // In a real application, this would trigger an email
+      } else {
+        showError('No account found with this email address.');
+      }
+    });
+
+    // Real-time validation feedback
+    emailInput.addEventListener('blur', function() {
+      if (this.value && !isValidEmail(this.value)) {
+        this.style.borderColor = '#e53e3e';
+      } else {
+        this.style.borderColor = '#e2e8f0';
+      }
+    });
+
+    // Auto-fill demo credentials on demo info click
+    document.querySelector('.demo-credentials').addEventListener('click', function() {
+      emailInput.value = DEMO_CREDENTIALS.email;
+      passwordInput.value = DEMO_CREDENTIALS.password;
+      emailInput.focus();
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check for remembered login
+      checkRememberedLogin();
+      
+      // Focus email input
+      emailInput.focus();
+      
+      // Check if user is already logged in
+      const currentSession = sessionStorage.getItem('posturetrack_session');
+      if (currentSession) {
+        const session = JSON.parse(currentSession);
+        if (session.isLoggedIn) {
+          showSuccess('You are already logged in. Redirecting...');
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1500);
+        }
+      }
+
+      // Log existing registrations for debugging
+      const existingDoctors = JSON.parse(localStorage.getItem('posturetrack_doctors') || '[]');
+      console.log('Registered doctors:', existingDoctors.length);
+    });
+
+    // Handle Enter key in password field
+    passwordInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        form.dispatchEvent(new Event('submit'));
+      }
+    });
+  </script>
+</body>
+</html>

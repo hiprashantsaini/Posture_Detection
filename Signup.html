@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Doctor Registration - PostureTrack</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .signup-wrapper {
+      width: 100%;
+      max-width: 480px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      animation: slideUp 0.8s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .signup-header {
+      background: linear-gradient(135deg, #2d3748, #4a5568);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .signup-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .logo {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .logo i {
+      color: #4299e1;
+      margin-right: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      opacity: 0.9;
+      position: relative;
+      z-index: 2;
+    }
+
+    .signup-form {
+      padding: 2.5rem;
+      background: white;
+    }
+
+    .form-title {
+      color: #2d3748;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      flex: 1;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      color: #4a5568;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 1rem;
+      background: #f8fafc;
+      transition: all 0.3s ease;
+      color: #2d3748;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #4299e1;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .form-group input::placeholder {
+      color: #a0aec0;
+    }
+
+    .input-icon {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #a0aec0;
+      transition: color 0.3s ease;
+    }
+
+    .form-group input:focus + .input-icon {
+      color: #4299e1;
+    }
+
+    .password-toggle {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #4299e1, #3182ce);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
+      margin-top: 1rem;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(66, 153, 225, 0.4);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading {
+      display: none;
+      margin-left: 0.5rem;
+    }
+
+    .error-message {
+      background: #fed7d7;
+      color: #c53030;
+      padding: 0.875rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      border-left: 4px solid #c53030;
+      display: none;
+    }
+
+    .success-message {
+      background: #c6f6d5;
+      color: #2f855a;
+      padding: 0.875rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      border-left: 4px solid #2f855a;
+      display: none;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e2e8f0;
+      color: #718096;
+      font-size: 0.9rem;
+    }
+
+    .login-link a {
+      color: #4299e1;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .login-link a:hover {
+      color: #3182ce;
+    }
+
+    .form-footer {
+      background: #f8fafc;
+      padding: 1.5rem 2.5rem;
+      text-align: center;
+      color: #718096;
+      font-size: 0.85rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .signup-wrapper {
+        margin: 0;
+        border-radius: 16px;
+      }
+
+      .signup-header {
+        padding: 1.5rem;
+      }
+
+      .logo {
+        font-size: 1.75rem;
+      }
+
+      .signup-form {
+        padding: 2rem 1.5rem;
+      }
+
+      .form-row {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .form-footer {
+        padding: 1rem 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .signup-form {
+        padding: 1.5rem 1rem;
+      }
+
+      .form-title {
+        font-size: 1.25rem;
+      }
+
+      .submit-btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+      }
+    }
+
+    /* Animation for form validation */
+    .shake {
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-wrapper">
+    <div class="signup-header">
+      <div class="logo">
+        <i class="fas fa-user-md"></i>
+        PostureTrack
+      </div>
+      <div class="subtitle">AI-Powered Posture Analysis Platform</div>
+    </div>
+
+    <div class="signup-form">
+      <h2 class="form-title">Doctor Registration</h2>
+      
+      <div class="error-message" id="errorMessage"></div>
+      <div class="success-message" id="successMessage"></div>
+
+      <form id="signupForm" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name *</label>
+            <div class="input-wrapper">
+              <input type="text" id="firstName" required>
+              <i class="fas fa-user input-icon"></i>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name *</label>
+            <div class="input-wrapper">
+              <input type="text" id="lastName" required>
+              <i class="fas fa-user input-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address *</label>
+          <div class="input-wrapper">
+            <input type="email" id="email" required>
+            <i class="fas fa-envelope input-icon"></i>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password *</label>
+          <div class="input-wrapper">
+            <input type="password" id="password" required minlength="8">
+            <i class="fas fa-eye password-toggle input-icon" id="passwordToggle"></i>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">Phone Number *</label>
+            <div class="input-wrapper">
+              <input type="tel" id="phone" required>
+              <i class="fas fa-phone input-icon"></i>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="licenseNumber">License Number *</label>
+            <div class="input-wrapper">
+              <input type="text" id="licenseNumber" required>
+              <i class="fas fa-id-card input-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="specialization">Specialization *</label>
+          <select id="specialization" required>
+            <option value="">Select Specialization</option>
+            <option value="physiotherapist">Physiotherapist</option>
+            <option value="orthopedic">Orthopedic Surgeon</option>
+            <option value="sports-medicine">Sports Medicine</option>
+            <option value="rheumatologist">Rheumatologist</option>
+            <option value="neurologist">Neurologist</option>
+            <option value="chiropractor">Chiropractor</option>
+            <option value="physical-medicine">Physical Medicine & Rehabilitation</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="hospital">Hospital / Clinic Name *</label>
+          <div class="input-wrapper">
+            <input type="text" id="hospital" required>
+            <i class="fas fa-hospital input-icon"></i>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="address">Address</label>
+          <div class="input-wrapper">
+            <input type="text" id="address" placeholder="Hospital/Clinic Address">
+            <i class="fas fa-map-marker-alt input-icon"></i>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          Create Account
+          <i class="fas fa-spinner fa-spin loading" id="loadingIcon"></i>
+        </button>
+      </form>
+
+      <div class="login-link">
+        Already have an account? <a href="login.html">Sign In</a>
+      </div>
+    </div>
+
+    <div class="form-footer">
+      By registering, you agree to our Terms of Service and Privacy Policy
+    </div>
+  </div>
+
+  <script>
+    // Form elements
+    const form = document.getElementById('signupForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingIcon = document.getElementById('loadingIcon');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+    const passwordToggle = document.getElementById('passwordToggle');
+    const passwordInput = document.getElementById('password');
+
+    // Password toggle functionality
+    passwordToggle.addEventListener('click', function() {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      this.classList.toggle('fa-eye');
+      this.classList.toggle('fa-eye-slash');
+    });
+
+    // Form validation
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      successMessage.style.display = 'none';
+      form.classList.add('shake');
+      setTimeout(() => form.classList.remove('shake'), 500);
+    }
+
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+      errorMessage.style.display = 'none';
+    }
+
+    function hideMessages() {
+      errorMessage.style.display = 'none';
+      successMessage.style.display = 'none';
+    }
+
+    // Email validation
+    function isValidEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    // Phone validation
+    function isValidPhone(phone) {
+      const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+      return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+    }
+
+    // Password strength validation
+    function isStrongPassword(password) {
+      return password.length >= 8 && 
+             /[A-Z]/.test(password) && 
+             /[a-z]/.test(password) && 
+             /\d/.test(password);
+    }
+
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      hideMessages();
+
+      // Get form data
+      const formData = {
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        email: document.getElementById('email').value.trim().toLowerCase(),
+        password: document.getElementById('password').value,
+        phone: document.getElementById('phone').value.trim(),
+        licenseNumber: document.getElementById('licenseNumber').value.trim(),
+        specialization: document.getElementById('specialization').value,
+        hospital: document.getElementById('hospital').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        registrationDate: new Date().toISOString(),
+        isActive: true
+      };
+
+      // Validation
+      if (!formData.firstName || !formData.lastName) {
+        showError('Please enter your full name.');
+        return;
+      }
+
+      if (!formData.email || !isValidEmail(formData.email)) {
+        showError('Please enter a valid email address.');
+        return;
+      }
+
+      if (!formData.password) {
+        showError('Password is required.');
+        return;
+      }
+
+      if (!isStrongPassword(formData.password)) {
+        showError('Password must be at least 8 characters with uppercase, lowercase, and number.');
+        return;
+      }
+
+      if (!formData.phone || !isValidPhone(formData.phone)) {
+        showError('Please enter a valid phone number.');
+        return;
+      }
+
+      if (!formData.licenseNumber) {
+        showError('Medical license number is required.');
+        return;
+      }
+
+      if (!formData.specialization) {
+        showError('Please select your specialization.');
+        return;
+      }
+
+      if (!formData.hospital) {
+        showError('Hospital/Clinic name is required.');
+        return;
+      }
+
+      // Show loading state
+      submitBtn.disabled = true;
+      loadingIcon.style.display = 'inline-block';
+      submitBtn.textContent = 'Creating Account';
+
+      try {
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // Get existing doctors from localStorage
+        const existingDoctors = JSON.parse(localStorage.getItem('posturetrack_doctors') || '[]');
+
+        // Check if email already exists
+        const emailExists = existingDoctors.some(doctor => doctor.email === formData.email);
+        if (emailExists) {
+          showError('An account with this email already exists.');
+          return;
+        }
+
+        // Check if license number already exists
+        const licenseExists = existingDoctors.some(doctor => doctor.licenseNumber === formData.licenseNumber);
+        if (licenseExists) {
+          showError('This license number is already registered.');
+          return;
+        }
+
+        // Generate unique ID
+        formData.id = 'dr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+        // Add new doctor
+        existingDoctors.push(formData);
+        localStorage.setItem('posturetrack_doctors', JSON.stringify(existingDoctors));
+
+        // Show success message
+        showSuccess('Account created successfully! Redirecting to login...');
+
+        // Reset form
+        form.reset();
+
+        // Redirect after delay
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2000);
+
+      } catch (error) {
+        showError('Registration failed. Please try again.');
+        console.error('Registration error:', error);
+      } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        loadingIcon.style.display = 'none';
+        submitBtn.textContent = 'Create Account';
+      }
+    });
+
+    // Real-time validation feedback
+    document.getElementById('email').addEventListener('blur', function() {
+      if (this.value && !isValidEmail(this.value)) {
+        this.style.borderColor = '#e53e3e';
+      } else {
+        this.style.borderColor = '#e2e8f0';
+      }
+    });
+
+    document.getElementById('password').addEventListener('input', function() {
+      const strength = isStrongPassword(this.value);
+      this.style.borderColor = this.value.length > 0 ? (strength ? '#38a169' : '#e53e3e') : '#e2e8f0';
+    });
+
+    document.getElementById('phone').addEventListener('blur', function() {
+      if (this.value && !isValidPhone(this.value)) {
+        this.style.borderColor = '#e53e3e';
+      } else {
+        this.style.borderColor = '#e2e8f0';
+      }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Focus first input
+      document.getElementById('firstName').focus();
+      
+      // Log existing registrations for debugging
+      const existing = JSON.parse(localStorage.getItem('posturetrack_doctors') || '[]');
+      console.log('Existing doctor registrations:', existing.length);
+    });
+  </script>
+</body>
+</html>
